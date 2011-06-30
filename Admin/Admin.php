@@ -45,6 +45,13 @@ abstract class Admin implements AdminInterface, DomainObjectInterface
     protected $class;
 
     /**
+     * The actions that this admin supports (all actions by default)
+     *
+     * @var array
+     */
+    protected $actions = array('batch', 'create', 'delete', 'edit', 'list', 'view');
+
+    /**
      * The list field definitions (quick property definition)
      *
      * @var array
@@ -360,6 +367,28 @@ abstract class Admin implements AdminInterface, DomainObjectInterface
     }
 
     /**
+     * This method can be overwritten to tweak the supported actions whitelist:
+     *
+     * <code>
+     * $this->actions = array('list', 'view');
+     * </code>
+     */
+    protected function configureActions()
+    {
+    }
+
+    /**
+     * Check if an action is supported
+     *
+     * @param string $action The action name
+     * @return Boolean
+     */
+    public function hasAction($action)
+    {
+        return false !== array_search($action, $this->actions);
+    }
+
+    /**
      * overwrite this method to configure the list FormField definition
      *
      * @param ListMapper $list
@@ -423,6 +452,7 @@ abstract class Admin implements AdminInterface, DomainObjectInterface
         }
 
         $this->baseCodeRoute = $this->getCode();
+        $this->configureActions();
     }
 
     public function update($object)
@@ -823,12 +853,29 @@ abstract class Admin implements AdminInterface, DomainObjectInterface
             $this->getBaseControllerName()
         );
 
-        $collection->add('list');
-        $collection->add('create');
-        $collection->add('batch');
-        $collection->add('edit', $this->getRouterIdParameter().'/edit');
-        $collection->add('delete', $this->getRouterIdParameter().'/delete');
-        $collection->add('view', $this->getRouterIdParameter().'/view');
+        if ($this->hasAction('list')) {
+            $collection->add('list');
+        }
+
+        if ($this->hasAction('create')) {
+            $collection->add('create');
+        }
+
+        if ($this->hasAction('batch')) {
+            $collection->add('batch');
+        }
+
+        if ($this->hasAction('edit')) {
+            $collection->add('edit', $this->getRouterIdParameter().'/edit');
+        }
+
+        if ($this->hasAction('delete')) {
+            $collection->add('delete', $this->getRouterIdParameter().'/delete');
+        }
+
+        if ($this->hasAction('view')) {
+            $collection->add('view', $this->getRouterIdParameter().'/view');
+        }
 
         // add children urls
         foreach ($this->getChildren() as $children) {

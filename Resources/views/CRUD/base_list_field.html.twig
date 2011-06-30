@@ -11,15 +11,21 @@ file that was distributed with this source code.
 
 <td class="sonata-ba-list-field sonata-ba-list-field-{{ field_description.type }}" objectId="{{ admin.id(object) }}">
     {% if field_description.options.identifier is defined and admin.isGranted(['EDIT', 'VIEW']) %}
+        {% set close_a_tag = false %}
 
-        {% if admin.isGranted('EDIT') %}
+        {% if admin.isGranted('EDIT') and admin.hasAction('edit') %}
+            {% set close_a_tag = true %}
             <a href="{{ admin.generateUrl('edit', {'id': admin.id(object)}) }}">
-        {% else %}
+        {% elseif admin.isGranted('VIEW') and admin.hasAction('view') %}
+            {% set close_a_tag = true %}
             <a href="{{ admin.generateUrl('view', {'id': admin.id(object)}) }}">
         {% endif %}
 
-            {% block field %}{{ value }}{% endblock %}
-        </a>
+                {% block field %}{{ value }}{% endblock %}
+
+        {% if close_a_tag == true %}
+            </a>
+        {% endif %}
 
     {% else %}
         {{ block('field') }}
