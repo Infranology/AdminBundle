@@ -15,6 +15,7 @@ use Sonata\AdminBundle\Admin\FieldDescriptionInterface;
 use Sonata\AdminBundle\Filter\FilterInterface;
 use Sonata\AdminBundle\Admin\NoValueException;
 
+use Doctrine\Common\Collections\Collection;
 use Symfony\Component\Form\FormView;
 
 class SonataAdminExtension extends \Twig_Extension
@@ -176,13 +177,18 @@ class SonataAdminExtension extends \Twig_Extension
      */
     public function renderViewElement(FieldDescriptionInterface $fieldDescription, $object)
     {
-        $template = $this->getTemplate($fieldDescription, 'SonataAdminBundle:CRUD:base_view_field.html.twig');
-
         try {
             $value = $fieldDescription->getValue($object);
         } catch (NoValueException $e) {
             $value = null;
         }
+
+        // Not the best implementation, just a quick hack
+        $defaultTemplate = $value instanceof Collection ?
+            'SonataAdminBundle:CRUD:base_view_collection_field.html.twig' :
+            'SonataAdminBundle:CRUD:base_view_field.html.twig';
+
+        $template = $this->getTemplate($fieldDescription, $defaultTemplate);
 
         return $this->output($fieldDescription, $template, array(
             'field_description' => $fieldDescription,
